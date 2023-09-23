@@ -30,7 +30,7 @@ struct Value;
 
 struct Inputs {
   Operation operation = Operation::Null;
-  std::array<Value*, 2> values = { nullptr, nullptr };
+  std::vector<Value*> values;
 };
 
 struct Value {
@@ -49,9 +49,7 @@ struct Value {
 
     visited.insert(value);
     for (auto next : value->_inputs.values) {
-      if (next) {
-        next->backwardsOnce();
-      }
+      buildTopo(topo, visited, next);
     }
     topo.push_back(value);
   }
@@ -78,8 +76,8 @@ public:
 
   void backwards()
   {
-    thread_local std::vector<Value*> topo; topo.clear();
-    thread_local std::unordered_set<Value*> visited; visited.clear();
+    std::vector<Value*> topo;
+    std::unordered_set<Value*> visited;
     buildTopo(topo, visited, this);
     std::for_each(std::rbegin(topo), std::rend(topo), [&](Value* value) {
       value->backwardsOnce();
@@ -107,12 +105,12 @@ public:
     current << std::string(indents, ' ') << "value=" << _value << " grad=" << _grad << " " << operation << std::endl;
     const auto currentStr = current.str();
 
-    if (auto left = _inputs.values[0]; left) {
-      left->printTree(currentStr.size());
+    if (const bool hasLeft = _inputs.values.size() > 0; hasLeft) {
+      _inputs.values[0]->printTree(currentStr.size());
     }
     std::cout << currentStr;
-    if (auto right = _inputs.values[1]; right) {
-      right->printTree(currentStr.size());
+    if (const bool hasRight = _inputs.values.size() > 1; hasRight) {
+      _inputs.values[1]->printTree(currentStr.size());
     }
   }
 };
