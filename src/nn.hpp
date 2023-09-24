@@ -20,7 +20,7 @@ public:
   Neuron(size_t numberOfInputs) : _weights(generateWeights(numberOfInputs)), _bias(Value::make(0.0))
   {}
 
-  ValuePtr operator()(std::vector<ValuePtr> input) {
+  ValuePtr operator()(const std::vector<ValuePtr>& input) {
     auto sum = _bias;
     for (size_t i = 0; i<input.size(); ++i) {
       sum = sum + (input[i]* _weights[i]);
@@ -44,7 +44,7 @@ public:
   Layer(size_t numberOfInputs, size_t numberOfOutputs) : _neurons(numberOfOutputs, Neuron(numberOfInputs))
   {}
 
-  auto operator()(std::vector<ValuePtr> input) {
+  auto operator()(const std::vector<ValuePtr>& input) {
     std::vector<ValuePtr> result;
     for (auto& n : _neurons) {
       result.push_back(n(input));
@@ -65,7 +65,7 @@ public:
 class MultilayerPerceptron {
   std::vector<Layer> _layers;
 public:
-  MultilayerPerceptron(std::vector<size_t> neuronsPerLayer) {
+  MultilayerPerceptron(const std::vector<size_t>& neuronsPerLayer) {
     for (size_t i = 0; i<neuronsPerLayer.size()-1; ++i) {
       _layers.push_back(Layer(neuronsPerLayer[i], neuronsPerLayer[i+1]));
     }
