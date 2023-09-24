@@ -40,6 +40,17 @@ struct Inputs {
   double power = 0.0;
 };
 
+// Note: do not construct directly unless you have specific requirements
+// Use the Value::make(...), as the ValuePtr type has all the operators defined on it
+//
+// Scalar floating point number type which allows building and evaluating
+// mathematical expression trees forwards and backward:
+// - Forwards: resolve/simplify the mathematical expression value
+// - Backwards: calculate the partial derivative for all input terms in the tree
+// by applying the chain rule backwards
+//
+// This is done by saving the input expressions/terms for each 'Value'
+// and traversing the tree as needed.
 struct Value {
   double _value;
   Inputs _inputs;
