@@ -56,6 +56,7 @@ void nnTests1()
 
   // create and train neural net
   auto mlp = MultilayerPerceptron({ 1, 10, 10, 1 });
+  auto params = mlp.parameters();
   for (size_t i=0; i<10000; ++i) {
     // Forwards: Run each training data through the neural net
     auto ypred = std::vector<ValuePtr>{};
@@ -68,13 +69,13 @@ void nnTests1()
     if (loss->_value < 0.0001) {
       break;
     }
-    for (auto p : mlp.parameters()) {
-        p->_grad = 0.0;
+    for (auto p : params) {
+      p->_grad = 0.0;
     }
     loss->backwards();
 
     // Update: Adjust weights and bias parameters
-    for (auto p : mlp.parameters()) {
+    for (auto p : params) {
       p->_value -= (0.00001 * p->_grad);
     }
   }
@@ -104,6 +105,7 @@ void nnTests2()
 
   // create and train neural net
   auto mlp = MultilayerPerceptron({ 3, 4, 4, 1 });
+  auto params = mlp.parameters();
   for (size_t i=0; i<10000; ++i) {
     // Forwards: Run each training data through the neural net
     auto ypred = std::vector<ValuePtr>{};
@@ -116,13 +118,13 @@ void nnTests2()
     if (loss->_value < 0.00000000001) {
       break;
     }
-    for (auto p : mlp.parameters()) {
+    for (auto p : params) {
       p->_grad = 0.0;
     }
     loss->backwards();
 
   // Update: Adjust weights and bias parameters
-    for (auto p : mlp.parameters()) {
+    for (auto p : params) {
       p->_value -= (0.0001 * p->_grad);
     }
   }
