@@ -3,6 +3,9 @@
 #include "engine.hpp"
 #include <random>
 
+// N scalar inputs -> 1 scalar output
+// Maintains a 'weight' multiplier for each input to manipulate effect
+// Has an overall bias to control overall firing
 class Neuron {
   std::vector<ValuePtr> _weights;
   ValuePtr _bias;
@@ -38,6 +41,9 @@ public:
   }
 };
 
+// N scalar inputs -> X scalar outputs (X being number of neurons)
+// Computed by feeding the inputs to each Neuron in the layer
+// and including the single scalar output in the result
 class Layer {
   std::vector<Neuron> _neurons;
 public:
@@ -62,6 +68,10 @@ public:
   }
 };
 
+// N scalar inputs, M scalar outputs
+// Feeds input through the next layer
+// and the output to next consecutive layer
+// until it reaches the end
 class MultilayerPerceptron {
   std::vector<Layer> _layers;
 public:
