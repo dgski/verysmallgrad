@@ -79,9 +79,9 @@ struct Value {
       a->_grad += b->_value * _grad;
       b->_grad += a->_value * _grad;
     } else if (_inputs.operation == Operation::Power) {
-      _inputs.values[0]->_grad += (_inputs.power * std::pow(_value, _inputs.power-1)) * _grad;
+      _inputs.values[0]->_grad += (_inputs.power * std::pow(_inputs.values[0]->_value, _inputs.power-1)) * _grad;
     } else if (_inputs.operation == Operation::RELU) {
-      _inputs.values[0]->_grad = double(_value > 0.0) * _grad;
+      _inputs.values[0]->_grad += double(_value > 0.0) * _grad;
     }
   }
 
@@ -90,6 +90,7 @@ struct Value {
     std::vector<Value*> topo;
     std::unordered_set<Value*> visited;
     buildTopo(topo, visited, this);
+    _grad = 1.0;
     std::for_each(std::rbegin(topo), std::rend(topo), [&](Value* value) {
       value->backwardsOnce();
     });
