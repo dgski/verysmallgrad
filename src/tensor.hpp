@@ -48,10 +48,12 @@ public:
       return Tensor({_data[pos]}, {1});
     } else {
       std::vector<double> data;
-      for (size_t i=0; i<_shape[indices.size()]; ++i) {
+      const auto shape = std::vector<size_t>(_shape.begin() + indices.size(), _shape.end());
+      const auto size = getSize(shape);
+      for (size_t i=0; i<size; ++i) {
         data.push_back(_data[pos + i]);
       }
-      return Tensor(data, {_shape[indices.size()]});
+      return Tensor(data, shape);
     }
   }
   double element() const {
@@ -61,7 +63,10 @@ public:
     return _data[0];
   }
   Tensor view(std::initializer_list<size_t> shape) { return Tensor(_data, shape); }
-  Tensor apply(std::function<double(double, size_t)> fn) {
+
+
+  template<typename Func>
+  Tensor apply(Func&& fn) {
     std::vector<double> data;
     for (size_t i=0; i<_data.size(); ++i) {
       data.push_back(fn(_data[i], i));
@@ -93,7 +98,10 @@ public:
   Tensor operator-(double value) {
     return apply([value](double d, size_t) { return d - value; });
   }
-
+  Tensor matmul(const Tensor&) {
+    // Implement matrix multiplication for N-dimensional tensors
+    throw std::runtime_error("Not implemented");
+  }
 
   friend std::ostream& operator<<(std::ostream& os, const Tensor& t) {
     if (t._shape.size() > 2) {
