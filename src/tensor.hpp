@@ -5,16 +5,27 @@
 class Tensor {
   std::vector<double> _data;
   std::vector<size_t> _shape;
+  std::vector<size_t> _strides;
 
   size_t getStride(size_t dim) const {
-    size_t stride = 1;
-    for (size_t i=dim+1; i<_shape.size(); ++i) {
-      stride *= _shape[i];
+    return _strides[dim];
+  }
+  auto buildStrides() {
+    std::vector<size_t> strides;
+    strides.reserve(_shape.size());
+    strides.push_back(1);
+    for (size_t i=1; i<_shape.size(); ++i) {
+      strides.push_back(strides[i-1] * _shape[i]);
     }
-    return stride;
+    std::reverse(strides.begin(), strides.end());
+    return strides;
   }
 public:
-  Tensor(std::vector<double> data, std::vector<size_t> shape) : _data(data), _shape(shape) {}
+  Tensor(std::vector<double> data, std::vector<size_t> shape)
+  : _data(data),
+  _shape(shape),
+  _strides(buildStrides())
+  {}
   Tensor operator[](std::initializer_list<size_t> indices) const {
     size_t pos = 0;
     for (size_t i=0; i<indices.size(); ++i) {
