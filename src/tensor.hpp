@@ -16,15 +16,7 @@ class Tensor {
 public:
   Tensor(std::vector<double> data, std::vector<size_t> shape) : _data(data), _shape(shape) {}
   Tensor operator[](std::initializer_list<size_t> indices) const {
-    // shape: [3, 2]
-    // 1d view: [1, 2, 3, 4, 5, 6]
-    // 2d view: [[1, 2], [3, 4], [5, 6]]
-
-    // get(0, 0) -> 1
-    // get(1) -> [3, 4]
-    
     size_t pos = 0;
-
     for (size_t i=0; i<indices.size(); ++i) {
       const auto stride = getStride(i);
       pos += *(indices.begin() + i) * stride;
