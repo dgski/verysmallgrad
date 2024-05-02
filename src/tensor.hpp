@@ -11,13 +11,11 @@ class Tensor {
     return _strides[dim];
   }
   auto buildStrides() {
-    std::vector<size_t> strides;
-    strides.reserve(_shape.size());
-    strides.push_back(1);
-    for (size_t i=1; i<_shape.size(); ++i) {
-      strides.push_back(strides[i-1] * _shape[i]);
+    std::vector<size_t> strides(_shape.size());
+    strides.back() = 1;
+    for (int i=_shape.size()-2; i>=0; --i) {
+      strides[i] = strides[i+1] * _shape[i];
     }
-    std::reverse(strides.begin(), strides.end());
     return strides;
   }
 public:
