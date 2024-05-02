@@ -51,6 +51,18 @@ void tensorTests()
   auto t7 = Tensor::ones({ 1000, 1000 });
   auto t8 = t6.matmul(t7);
   assert((t8[{0, 0}].element() == 1000.0));
+
+  auto t9 = Tensor::ones({ 2, 2 });
+  auto t10 = t9.relu();
+  assert((t10[{0, 0}].element() == 1.0));
+
+  auto t11 = Tensor::ones({ 2, 2 });
+  auto t12 = t11.sum();
+  assert((t12 == 4.0));
+
+  auto t13 = Tensor::fill({ 2, 2 }, 2.0);
+  auto t14 = t13.power(2.0);
+  assert((t14[{0, 0}].element() == 4.0));
 }
 
 void engineTests()

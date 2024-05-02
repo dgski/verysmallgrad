@@ -176,4 +176,10 @@ public:
     }
     return result;
   }
+  auto relu() {
+    return apply([](double d, size_t) { return d > 0.0 ? d : 0.0; });
+  }
+  auto power (double value) {
+    return apply([value](double d, size_t) { return std::pow(d, value); });
+  }
 };
