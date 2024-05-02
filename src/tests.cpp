@@ -16,6 +16,10 @@ void tensorTests()
   assert((zeros[{0, 0}].element() == 0.0));
   assert((zeros[{0, 1}].element() == 0.0));
 
+  auto filled = Tensor::fill({ 2, 2 }, 5.0);
+  assert((filled[{0, 0}].element() == 5.0));
+  assert((filled[{0, 1}].element() == 5.0));
+
   Tensor t({ 1.0, 2.0, 3.0, 4.0 }, { 2, 2 });
   assert((t[{1, 1}].element() == 4.0));
   assert((t[{ 1 }] == Tensor({ 3.0, 4.0 }, { 2 })));

@@ -18,12 +18,23 @@ class Tensor {
     }
     return strides;
   }
+  static auto getSize(const std::vector<size_t>& shape) {
+    size_t size = 1;
+    for (const auto& s : shape) {
+      size *= s;
+    }
+    return size;
+  }
 public:
   Tensor(std::vector<double> data, std::vector<size_t> shape)
   : _data(data),
   _shape(shape),
   _strides(buildStrides())
-  {}
+  {
+    if (getSize(shape) != data.size()) {
+      throw std::runtime_error("Data size does not match shape");
+    }
+  }
   Tensor operator[](std::initializer_list<size_t> indices) const {
     size_t pos = 0;
     for (size_t i=0; i<indices.size(); ++i) {
@@ -99,19 +110,12 @@ public:
     }
     return true;
   }
-
-  static Tensor zeros(std::vector<size_t> shape) {
-    std::vector<double> data;
-    for (size_t i=0; i<shape[0]; ++i) {
-      data.push_back(0.0);
-    }
+  static Tensor fill(std::vector<size_t> shape, double value) {
+    std::vector<double> data(getSize(shape), value);
     return Tensor(data, shape);
   }
-  static Tensor ones(std::vector<size_t> shape) {
-    std::vector<double> data;
-    for (size_t i=0; i<shape[0]; ++i) {
-      data.push_back(1.0);
-    }
-    return Tensor(data, shape);
-  }
+  static Tensor zeros(std::vector<size_t> shape) { return fill(shape, 0.0); }
+  static Tensor ones(std::vector<size_t> shape) { return fill(shape, 1.0); }
+  const auto& shape() const { return _shape; }
+  const auto& data() const { return _data; }
 };
