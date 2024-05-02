@@ -4,6 +4,28 @@
 
 #include "engine.hpp"
 #include "nn.hpp"
+#include "tensor.hpp"
+
+void tensorTests()
+{
+  auto ones = Tensor::ones({ 2, 2 });
+  assert((ones[{0, 0}].element() == 1.0));
+  assert((ones[{0, 1}].element() == 1.0));
+
+  auto zeros = Tensor::zeros({ 2, 2 });
+  assert((zeros[{0, 0}].element() == 0.0));
+  assert((zeros[{0, 1}].element() == 0.0));
+
+  Tensor t({ 1.0, 2.0, 3.0, 4.0 }, { 2, 2 });
+  assert((t[{1, 1}].element() == 4.0));
+  assert((t[{ 1 }] == Tensor({ 3.0, 4.0 }, { 2 })));
+
+  Tensor t1({ 1.0, 2.0, 3.0, 4.0 }, { 2, 2 });
+  Tensor t2({ 5.0, 6.0, 7.0, 8.0 }, { 2, 2 });
+  auto t3 = t1 + t2;
+  assert((t3[{0, 0}].element() == 6.0));
+  assert((std::stringstream() << t3).str() == "[6 8 ]\n[10 12 ]\n");
+}
 
 void engineTests()
 {
@@ -135,6 +157,7 @@ void nnTests2()
 }
 
 int main() {
+  tensorTests();
   engineTests();
   nnTests1();
   nnTests2();
