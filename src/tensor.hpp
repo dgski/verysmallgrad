@@ -154,6 +154,9 @@ public:
     }
     return true;
   }
+  bool operator!=(const Tensor& other) const {
+    return !(*this == other);
+  }
   static Tensor fill(std::vector<size_t> shape, double value) {
     std::vector<double> data(getSize(shape), value);
     return Tensor(data, shape);
@@ -181,5 +184,37 @@ public:
   }
   auto power (double value) {
     return apply([value](double d, size_t) { return std::pow(d, value); });
+  }
+
+  bool operator<(const Tensor& other) const {
+    return sum() < other.sum();
+  }
+  bool operator>(const Tensor& other) const {
+    return sum() > other.sum();
+  }
+  bool operator<=(const Tensor& other) const {
+    return sum() <= other.sum();
+  }
+
+  // Add single element comparison operators
+  bool operator<(double value) const {
+    assert(_data.size() == 1);
+    return sum() < value;
+  }
+  bool operator>(double value) const {
+    assert(_data.size() == 1);
+    return sum() > value;
+  }
+  bool operator<=(double value) const {
+    assert(_data.size() == 1);
+    return sum() <= value;
+  }
+  bool operator==(double value) const {
+    assert(_data.size() == 1);
+    return sum() == value;
+  }
+  bool operator!=(double value) const {
+    assert(_data.size() == 1);
+    return sum() != value;
   }
 };

@@ -63,6 +63,9 @@ void tensorTests()
   auto t13 = Tensor::fill({ 2, 2 }, 2.0);
   auto t14 = t13.power(2.0);
   assert((t14[{0, 0}].element() == 4.0));
+
+  auto t15 = Tensor({ 1.0 }, { 1 });
+  assert((t15 < 2.0));
 }
 
 void engineTests()
