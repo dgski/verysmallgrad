@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
+#include <functional>
 
 class Tensor {
   std::vector<double> _data;
@@ -59,21 +61,39 @@ public:
     return _data[0];
   }
   Tensor view(std::initializer_list<size_t> shape) { return Tensor(_data, shape); }
+  Tensor apply(std::function<double(double, size_t)> fn) {
+    std::vector<double> data;
+    for (size_t i=0; i<_data.size(); ++i) {
+      data.push_back(fn(_data[i], i));
+    }
+    return Tensor(data, _shape);
+  }
+
   Tensor operator+(const Tensor& other) {
-    std::vector<double> result;
-    for (size_t i=0; i<_data.size(); ++i) {
-      result.push_back(_data[i] + other._data[i]);
-    }
-    return Tensor(result, _shape);
+    return apply([&other](double d, size_t i) { return d + other._data[i]; });
   }
-  // Implement element-wise multiplication
   Tensor operator*(const Tensor& other) {
-    std::vector<double> result;
-    for (size_t i=0; i<_data.size(); ++i) {
-      result.push_back(_data[i] * other._data[i]);
-    }
-    return Tensor(result, _shape);
+    return apply([&other](double d, size_t i) { return d * other._data[i]; });
   }
+  Tensor operator/(const Tensor& other) {
+    return apply([&other](double d, size_t i) { return d / other._data[i]; });
+  }
+  Tensor operator-(const Tensor& other) {
+    return apply([&other](double d, size_t i) { return d - other._data[i]; });
+  }
+  Tensor operator+(double value) {
+    return apply([value](double d, size_t) { return d + value; });
+  }
+  Tensor operator*(double value) {
+    return apply([value](double d, size_t) { return d * value; });
+  }
+  Tensor operator/(double value) {
+    return apply([value](double d, size_t) { return d / value; });
+  }
+  Tensor operator-(double value) {
+    return apply([value](double d, size_t) { return d - value; });
+  }
+
 
   friend std::ostream& operator<<(std::ostream& os, const Tensor& t) {
     if (t._shape.size() > 2) {
@@ -118,4 +138,11 @@ public:
   static Tensor ones(std::vector<size_t> shape) { return fill(shape, 1.0); }
   const auto& shape() const { return _shape; }
   const auto& data() const { return _data; }
+  auto sum() const {
+    double result = 0.0;
+    for (const auto& d : _data) {
+      result += d;
+    }
+    return result;
+  }
 };
