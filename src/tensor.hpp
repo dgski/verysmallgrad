@@ -98,9 +98,25 @@ public:
   Tensor operator-(double value) {
     return apply([value](double d, size_t) { return d - value; });
   }
-  Tensor matmul(const Tensor&) {
-    // Implement matrix multiplication for N-dimensional tensors
-    throw std::runtime_error("Not implemented");
+  Tensor matmul(const Tensor& other) {
+    // matrix multiplication is row by column
+    // [a, b] * [c,
+    //          d] = [a*c + b*d]
+    // The resultant matrix will have the shape of [1st matrix rows, 2nd matrix columns]
+    // The number of columns in the 1st matrix must be equal to the number of rows in the 2nd matrix
+    assert(_shape.size() == 2);
+    assert(other._shape == _shape);
+    std::vector<double> data;
+    for (size_t i=0; i<_shape[0]; ++i) {
+      for (size_t j=0; j<other._shape[1]; ++j) {
+        double sum = 0.0;
+        for (size_t k=0; k<_shape[1]; ++k) {
+          sum += _data[i*_shape[1] + k] * other._data[k*other._shape[1] + j];
+        }
+        data.push_back(sum);
+      }
+    }
+    return Tensor(data, {_shape[0], other._shape[1]});
   }
 
   friend std::ostream& operator<<(std::ostream& os, const Tensor& t) {
@@ -144,6 +160,13 @@ public:
   }
   static Tensor zeros(std::vector<size_t> shape) { return fill(shape, 0.0); }
   static Tensor ones(std::vector<size_t> shape) { return fill(shape, 1.0); }
+  static Tensor random(std::vector<size_t> shape) {
+    std::vector<double> data;
+    for (size_t i=0; i<getSize(shape); ++i) {
+      data.push_back((double)rand() / RAND_MAX);
+    }
+    return Tensor(data, shape);
+  }
   const auto& shape() const { return _shape; }
   const auto& data() const { return _data; }
   auto sum() const {

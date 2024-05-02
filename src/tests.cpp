@@ -24,11 +24,33 @@ void tensorTests()
   assert((t[{1, 1}].element() == 4.0));
   assert((t[{ 1 }] == Tensor({ 3.0, 4.0 }, { 2 })));
 
-  Tensor t1({ 1.0, 2.0, 3.0, 4.0 }, { 2, 2 });
-  Tensor t2({ 5.0, 6.0, 7.0, 8.0 }, { 2, 2 });
+  Tensor t1(
+    { 1.0, 2.0,
+    3.0, 4.0 }, { 2, 2 });
+  Tensor t2(
+    { 5.0, 6.0,
+    7.0, 8.0 }, { 2, 2 });
+
+  // (1*5 + 2*7), (1*6 + 2*8)
+  // (3*5 + 4*7), (3*6 + 4*8)
+  // = 19, 22
+  // = 43, 50
   auto t3 = t1 + t2;
   assert((t3[{0, 0}].element() == 6.0));
   assert((std::stringstream() << t3).str() == "[6 8 ]\n[10 12 ]\n");
+
+  auto t4 = t1 * t2;
+  assert((t4[{0, 0}].element() == 5.0));
+
+  auto t5 = t1.matmul(t2);
+  assert((t5 == Tensor({ 19.0, 22.0,
+                        43.0, 50.0 }, { 2, 2 })));
+
+  // Big matrix multiplication
+  auto t6 = Tensor::ones({ 1000, 1000 });
+  auto t7 = Tensor::ones({ 1000, 1000 });
+  auto t8 = t6.matmul(t7);
+  assert((t8[{0, 0}].element() == 1000.0));
 }
 
 void engineTests()
