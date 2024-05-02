@@ -10,6 +10,8 @@
 #include <cmath>
 #include <memory>
 
+#include "tensor.hpp"
+
 enum class Operation {
   Null,
   Addition,
@@ -52,9 +54,9 @@ struct Inputs {
 // This is done by saving the input expressions/terms for each 'Value'
 // and traversing the tree as needed.
 struct Value {
-  double _value;
+  Tensor _value;
   Inputs _inputs;
-  double _grad = 0.0;
+  Tensor _grad = 0.0;
 
   static void buildTopo(
     std::vector<Value*>& topo,
@@ -73,11 +75,14 @@ struct Value {
   }
 
   Value(double value, Inputs inputs = Inputs{})
+  : _value(Tensor::single(value)), _inputs(inputs)
+  {}
+  Value(Tensor value, Inputs inputs = Inputs{})
   : _value(value), _inputs(inputs)
   {}
 
   void zeroGrad() {
-    _grad = 0.0;
+    _grad = Tensor::single(0.0);
   }
 
   void backwardsOnce() {
@@ -90,9 +95,9 @@ struct Value {
       a->_grad += b->_value * _grad;
       b->_grad += a->_value * _grad;
     } else if (_inputs.operation == Operation::Power) {
-      _inputs.values[0]->_grad += (_inputs.power * std::pow(_inputs.values[0]->_value, _inputs.power-1)) * _grad;
+      _inputs.values[0]->_grad += (_inputs.values[0]->_value.power(_inputs.power-1) * _inputs.power) * _grad;
     } else if (_inputs.operation == Operation::RELU) {
-      _inputs.values[0]->_grad += double(_value > 0.0) * _grad;
+      _inputs.values[0]->_grad += _grad * double(_value > 0.0);
     }
   }
 
@@ -142,7 +147,7 @@ ValuePtr operator*(ValuePtr a, ValuePtr b)
 }
 ValuePtr power(ValuePtr a, double value)
 {
-  return std::make_shared<Value>(std::pow(a->_value, value), Inputs{ Operation::Power, { a }, value });
+  return std::make_shared<Value>(a->_value.power(value), Inputs{ Operation::Power, { a }, value });
 }
 ValuePtr operator-(ValuePtr a)
 {
@@ -158,7 +163,7 @@ ValuePtr operator-(ValuePtr a, ValuePtr b)
 }
 ValuePtr relu(ValuePtr a)
 {
-  return std::make_shared<Value>((a->_value > 0.0 ? a->_value : 0.0), Inputs{ Operation::RELU, { a } });
+  return std::make_shared<Value>((a->_value > 0.0 ? a->_value.element() : 0.0), Inputs{ Operation::RELU, { a } });
 }
 
 std::ostream& operator<<(std::ostream& os, const ValuePtr& value)

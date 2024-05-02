@@ -139,7 +139,7 @@ void nnTests1()
 
     // Update: Adjust weights and bias parameters
     for (auto p : params) {
-      p->_value -= (0.00001 * p->_grad);
+      p->_value -= (p->_grad * 0.00001);
     }
   }
 
@@ -188,13 +188,13 @@ void nnTests2()
 
   // Update: Adjust weights and bias parameters
     for (auto p : params) {
-      p->_value -= (0.0001 * p->_grad);
+      p->_value -= (p->_grad * 0.0001);
     }
   }
 
   auto input = std::vector<ValuePtr>{ { Value::make(2.0), Value::make(3.0), Value::make(-1.0) } };
   auto pred = mlp(input);
-  assert(std::abs(pred.front()->_value - 1.0) > 0.0);
+  assert(std::abs(pred.front()->_value.element() - 1.0) > 0.0);
 }
 
 int main() {

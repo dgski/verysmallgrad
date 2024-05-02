@@ -37,6 +37,11 @@ public:
       throw std::runtime_error("Data size does not match shape");
     }
   }
+  Tensor(double value)
+  : _data({value}),
+  _shape({1}),
+  _strides({1})
+  {}
   Tensor operator[](std::initializer_list<size_t> indices) const {
     size_t pos = 0;
     for (size_t i=0; i<indices.size(); ++i) {
@@ -63,7 +68,23 @@ public:
     return _data[0];
   }
   Tensor view(std::initializer_list<size_t> shape) { return Tensor(_data, shape); }
-
+  Tensor(const Tensor& other)
+  : _data(other._data),
+  _shape(other._shape),
+  _strides(other._strides)
+  {}
+  auto& operator=(const Tensor& other) {
+    _data = other._data;
+    _shape = other._shape;
+    _strides = other._strides;
+    return *this;
+  }
+  auto& operator=(double value) {
+    _data = {value};
+    _shape = {1};
+    _strides = {1};
+    return *this;
+  }
 
   template<typename Func>
   Tensor apply(Func&& fn) {
@@ -77,26 +98,58 @@ public:
   Tensor operator+(const Tensor& other) {
     return apply([&other](double d, size_t i) { return d + other._data[i]; });
   }
+  auto& operator+=(const Tensor& other) {
+    _data = apply([&other](double d, size_t i) { return d + other._data[i]; })._data;
+    return *this;
+  }
   Tensor operator*(const Tensor& other) {
     return apply([&other](double d, size_t i) { return d * other._data[i]; });
+  }
+  auto& operator*=(const Tensor& other) {
+    _data = apply([&other](double d, size_t i) { return d * other._data[i]; })._data;
+    return *this;
   }
   Tensor operator/(const Tensor& other) {
     return apply([&other](double d, size_t i) { return d / other._data[i]; });
   }
+  auto& operator/=(const Tensor& other) {
+    _data = apply([&other](double d, size_t i) { return d / other._data[i]; })._data;
+    return *this;
+  }
   Tensor operator-(const Tensor& other) {
     return apply([&other](double d, size_t i) { return d - other._data[i]; });
+  }
+  auto& operator-=(const Tensor& other) {
+    _data = apply([&other](double d, size_t i) { return d - other._data[i]; })._data;
+    return *this;
   }
   Tensor operator+(double value) {
     return apply([value](double d, size_t) { return d + value; });
   }
+  auto& operator+=(double value) {
+    _data = apply([value](double d, size_t) { return d + value; })._data;
+    return *this;
+  }
   Tensor operator*(double value) {
     return apply([value](double d, size_t) { return d * value; });
+  }
+  auto& operator*=(double value) {
+    _data = apply([value](double d, size_t) { return d * value; })._data;
+    return *this;
   }
   Tensor operator/(double value) {
     return apply([value](double d, size_t) { return d / value; });
   }
+  auto& operator/=(double value) {
+    _data = apply([value](double d, size_t) { return d / value; })._data;
+    return *this;
+  }
   Tensor operator-(double value) {
     return apply([value](double d, size_t) { return d - value; });
+  }
+  auto& operator-=(double value) {
+    _data = apply([value](double d, size_t) { return d - value; })._data;
+    return *this;
   }
   Tensor matmul(const Tensor& other) {
     // matrix multiplication is row by column
@@ -170,6 +223,7 @@ public:
     }
     return Tensor(data, shape);
   }
+  static Tensor single(double value) { return Tensor({value}, {1}); }
   const auto& shape() const { return _shape; }
   const auto& data() const { return _data; }
   auto sum() const {
