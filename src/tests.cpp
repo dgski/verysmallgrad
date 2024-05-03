@@ -37,7 +37,7 @@ void tensorTests()
   // = 43, 50
   auto t3 = t1 + t2;
   assert((t3[{0, 0}].element() == 6.0));
-  assert((std::stringstream() << t3).str() == "[6 8 ]\n[10 12 ]\n");
+  assert((std::stringstream() << t3).str() == "[[6 8 ][10 12 ]]");
 
   auto t4 = t1 * t2;
   assert((t4[{0, 0}].element() == 5.0));
@@ -86,6 +86,18 @@ void engineTests()
   assert(L->_value == 8.0);
   assert(L->_grad == -0.015625);
   assert(a->_grad == 0.09375);
+}
+
+void engineTensorTests()
+{
+  auto a = Value::make(Tensor({ 1.0, 2.0, 3.0, 4.0 }, { 2, 2 }));
+  auto b = Value::make(Tensor({ 5.0, 6.0, 7.0, 8.0 }, { 2, 2 }));
+  auto c = a * b;
+
+  assert(c->_value == Tensor({ 5.0, 12.0, 21.0, 32.0 }, { 2, 2 }));
+
+  c->backwards();
+  c->printTree();
 }
 
 auto print = [](auto& v) {
@@ -200,6 +212,8 @@ void nnTests2()
 int main() {
   tensorTests();
   engineTests();
+  engineTensorTests();
+
   nnTests1();
   nnTests2();
   return EXIT_SUCCESS;

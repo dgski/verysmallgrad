@@ -78,7 +78,7 @@ struct Value {
   : _value(Tensor::single(value)), _inputs(inputs)
   {}
   Value(Tensor value, Inputs inputs = Inputs{})
-  : _value(value), _inputs(inputs)
+  : _value(value), _inputs(inputs), _grad(Tensor::zeros(value.shape()))
   {}
 
   void zeroGrad() {
@@ -106,7 +106,7 @@ struct Value {
     std::vector<Value*> topo;
     std::unordered_set<Value*> visited;
     buildTopo(topo, visited, this);
-    _grad = 1.0;
+    _grad = _grad.apply([](double, size_t) { return 1.0; });
     std::for_each(std::rbegin(topo), std::rend(topo), [&](Value* value) {
       value->backwardsOnce();
     });
@@ -163,7 +163,8 @@ ValuePtr operator-(ValuePtr a, ValuePtr b)
 }
 ValuePtr relu(ValuePtr a)
 {
-  return std::make_shared<Value>((a->_value > 0.0 ? a->_value.element() : 0.0), Inputs{ Operation::RELU, { a } });
+  auto value = a->_value.apply([](double x, size_t) { return x > 0.0 ? x : 0.0; });
+  return std::make_shared<Value>(std::move(value), Inputs{ Operation::RELU, { a } });
 }
 
 std::ostream& operator<<(std::ostream& os, const ValuePtr& value)

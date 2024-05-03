@@ -183,13 +183,15 @@ public:
       }
       os << ']';
     } else {
+      os << '[';
       for (size_t i=0; i<t._shape[0]; ++i) {
         os << '[';
         for (size_t j=0; j<t._shape[1]; ++j) {
           os << t._data[i*t._shape[1] + j] << ' ';
         }
-        os << ']' << std::endl;
+        os << ']';
       }
+      os << ']';
     }
     return os;
   }
