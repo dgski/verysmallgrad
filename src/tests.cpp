@@ -106,6 +106,11 @@ void engineTensorTests()
   assert(d->_value == Tensor({ 19.0, 22.0, 43.0, 50.0 }, { 2, 2 }));
   d->zeroAllGrads();
   d->backwards();
+
+  auto e = Value::make(Tensor({ 1.0, 2.0, 3.0, 4.0 }, { 2, 2 }));
+  auto f = sum(e);
+  f->backwards();
+  assert(e->_grad == Tensor({ 1.0, 1.0, 1.0, 1.0 }, { 2, 2 }));
 }
 
 auto print = [](auto& v) {

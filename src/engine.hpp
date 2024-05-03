@@ -18,7 +18,8 @@ enum class Operation {
   Multiplication,
   Power,
   RELU,
-  MatMul
+  MatMul,
+  Sum
 };
 
 std::string_view toString(Operation op)
@@ -31,6 +32,7 @@ std::string_view toString(Operation op)
     case Operation::Power: return "pow";
     case Operation::RELU: return "RELU";
     case Operation::MatMul: return "MatMul";
+    case Operation::Sum: return "Sum";
   }
 
   throw std::runtime_error("Unhandled op");
@@ -111,6 +113,8 @@ struct Value {
       auto& b = _inputs.values[1];
       a->_grad += _grad.matmul(b->_value.transpose());
       b->_grad += a->_value.transpose().matmul(_grad);
+    } else if (_inputs.operation == Operation::Sum) {
+      _inputs.values[0]->_grad += _grad.element();
     }
   }
 
@@ -182,6 +186,10 @@ ValuePtr relu(ValuePtr a)
 ValuePtr matmul(ValuePtr a, ValuePtr b)
 {
   return std::make_shared<Value>(a->_value.matmul(b->_value), Inputs{ Operation::MatMul, { a, b } });
+}
+ValuePtr sum(ValuePtr a)
+{
+  return std::make_shared<Value>(a->_value.sum(), Inputs{ Operation::Sum, { a } });
 }
 
 std::ostream& operator<<(std::ostream& os, const ValuePtr& value)
