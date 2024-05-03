@@ -172,6 +172,21 @@ public:
     return Tensor(data, {_shape[0], other._shape[1]});
   }
 
+  Tensor transpose() {
+    // Transpose a matrix is to flip the matrix over its diagonal
+    // [a, b] -> [a, c]
+    // [c, d]    [b, d]
+
+    // The shape of the matrix will be flipped
+    std::vector<double> data;
+    for (size_t i=0; i<_shape[1]; ++i) {
+      for (size_t j=0; j<_shape[0]; ++j) {
+        data.push_back(_data[j*_shape[1] + i]);
+      }
+    }
+    return Tensor(data, {_shape[1], _shape[0]});
+  }
+
   friend std::ostream& operator<<(std::ostream& os, const Tensor& t) {
     if (t._shape.size() > 2) {
       throw std::runtime_error("Only 1D and 2D tensors are supported");

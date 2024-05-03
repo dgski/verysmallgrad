@@ -66,6 +66,11 @@ void tensorTests()
 
   auto t15 = Tensor({ 1.0 }, { 1 });
   assert((t15 < 2.0));
+
+  // Transpose
+  auto t16 = Tensor({ 1.0, 2.0, 3.0, 4.0 }, { 2, 2 });
+  auto t17 = t16.transpose();
+  assert((t17 == Tensor({ 1.0, 3.0, 2.0, 4.0 }, { 2, 2 })));
 }
 
 void engineTests()
@@ -95,9 +100,12 @@ void engineTensorTests()
   auto c = a * b;
 
   assert(c->_value == Tensor({ 5.0, 12.0, 21.0, 32.0 }, { 2, 2 }));
-
   c->backwards();
-  c->printTree();
+
+  auto d = matmul(a, b);
+  assert(d->_value == Tensor({ 19.0, 22.0, 43.0, 50.0 }, { 2, 2 }));
+  d->zeroAllGrads();
+  d->backwards();
 }
 
 auto print = [](auto& v) {

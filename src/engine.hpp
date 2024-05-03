@@ -17,7 +17,8 @@ enum class Operation {
   Addition,
   Multiplication,
   Power,
-  RELU
+  RELU,
+  MatMul
 };
 
 std::string_view toString(Operation op)
@@ -29,6 +30,7 @@ std::string_view toString(Operation op)
     case Operation::Multiplication: return "*";
     case Operation::Power: return "pow";
     case Operation::RELU: return "RELU";
+    case Operation::MatMul: return "MatMul";
   }
 
   throw std::runtime_error("Unhandled op");
@@ -82,7 +84,13 @@ struct Value {
   {}
 
   void zeroGrad() {
-    _grad = Tensor::single(0.0);
+    _grad = _grad.apply([](double, size_t) { return 0.0; });
+  }
+  void zeroAllGrads() {
+    zeroGrad();
+    for (auto& value : _inputs.values) {
+      value->zeroAllGrads();
+    }
   }
 
   void backwardsOnce() {
@@ -98,6 +106,11 @@ struct Value {
       _inputs.values[0]->_grad += (_inputs.values[0]->_value.power(_inputs.power-1) * _inputs.power) * _grad;
     } else if (_inputs.operation == Operation::RELU) {
       _inputs.values[0]->_grad += _grad * double(_value > 0.0);
+    } else if (_inputs.operation == Operation::MatMul) {
+      auto& a = _inputs.values[0];
+      auto& b = _inputs.values[1];
+      a->_grad += _grad.matmul(b->_value.transpose());
+      b->_grad += a->_value.transpose().matmul(_grad);
     }
   }
 
@@ -165,6 +178,10 @@ ValuePtr relu(ValuePtr a)
 {
   auto value = a->_value.apply([](double x, size_t) { return x > 0.0 ? x : 0.0; });
   return std::make_shared<Value>(std::move(value), Inputs{ Operation::RELU, { a } });
+}
+ValuePtr matmul(ValuePtr a, ValuePtr b)
+{
+  return std::make_shared<Value>(a->_value.matmul(b->_value), Inputs{ Operation::MatMul, { a, b } });
 }
 
 std::ostream& operator<<(std::ostream& os, const ValuePtr& value)
