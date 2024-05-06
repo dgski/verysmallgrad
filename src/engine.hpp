@@ -107,10 +107,13 @@ struct Value {
     } else if (_inputs.operation == Operation::Power) {
       _inputs.values[0]->_grad += (_inputs.values[0]->_value.power(_inputs.power-1) * _inputs.power) * _grad;
     } else if (_inputs.operation == Operation::RELU) {
-      _inputs.values[0]->_grad += _grad * double(_value > 0.0);
+      _inputs.values[0]->_grad += _grad * _value.apply([](double x, size_t) { return x > 0.0; });
     } else if (_inputs.operation == Operation::MatMul) {
       auto& a = _inputs.values[0];
       auto& b = _inputs.values[1];
+      // 4x1
+      // 4x4
+      // 4x4
       a->_grad += _grad.matmul(b->_value.transpose());
       b->_grad += a->_value.transpose().matmul(_grad);
     } else if (_inputs.operation == Operation::Sum) {
@@ -149,6 +152,14 @@ struct Value {
   static auto make(Args&&... args)
   {
     return std::make_shared<Value>(std::forward<Args>(args)...);
+  }
+
+  auto params()
+  {
+    std::vector<Value*> params;
+    std::unordered_set<Value*> visited;
+    buildTopo(params, visited, this);
+    return params;
   }
 };
 

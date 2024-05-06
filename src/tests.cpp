@@ -222,12 +222,63 @@ void nnTests2()
   assert(std::abs(pred.front()->_value.element() - 1.0) > 0.0);
 }
 
-int main() {
-  tensorTests();
-  engineTests();
-  engineTensorTests();
+template<typename T>
+std::string toString(const std::vector<T>& vec)
+{
+  std::stringstream ss;
+  ss << '[';
+  for (auto& v : vec) {
+    ss << v << ' ';
+  }
+  ss << ']';
+  return ss.str();
+}
 
-  nnTests1();
-  nnTests2();
+void nnTestsTensor()
+{
+  const size_t inputSize = 1;
+  const size_t outputSize = 1;
+  const size_t batchSize = 4;
+
+  auto weights = Value::make(Tensor::random({ inputSize, outputSize }));
+
+  auto iota = []() {
+    static double i = 0;
+    return i++;
+  };
+  auto xs = Value::make(Tensor::generate({ batchSize, inputSize }, iota));
+  auto ys = xs;
+  std::cout << "xs=" << xs->_value << std::endl;
+  std::cout << "ys=" << ys->_value << std::endl;
+
+  auto calcLoss = [](auto& actual, auto& predicted) {
+    return sum(power(actual - predicted, 2.0));
+  };
+
+  for (size_t i=0; i<100; ++i) {
+    auto output = matmul(xs, weights);
+    auto loss = calcLoss(output, ys);
+    std::cout << "output=" << output->_value;
+    std::cout << "expected=" << ys->_value;
+    std::cout << "i=" << i << " loss=" << loss->_value << std::endl;
+    loss->zeroAllGrads();
+    loss->backwards();
+    weights->_value -= weights->_grad * 0.001;
+  }
+
+  // Test out the trained model
+  auto input2 = Value::make(Tensor::random({ 1, inputSize }));
+  auto output2 = matmul(input2, weights);
+  std::cout << "input2=" << input2->_value << " output2=" << output2->_value << std::endl;
+}
+
+int main() {
+  //tensorTests();
+  //engineTests();
+  //engineTensorTests();
+
+  nnTestsTensor();
+  //nnTests1();
+  //nnTests2();
   return EXIT_SUCCESS;
 }
